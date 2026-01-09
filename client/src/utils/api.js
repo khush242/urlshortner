@@ -1,6 +1,6 @@
 import axios from "axios";
 import {store }from "../store/store.js";
-import { logoutSuccess } from "../features/auth/authSlice";
+import { logoutSuccess, refreshTokenRequest, refreshTokenSuccess, refreshTokenFailure } from "../features/auth/authSlice";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -24,10 +24,17 @@ api.interceptors.response.use(
   response => response,
   async error => {
     const originalRequest = error.config;
+    const url = originalRequest.url;
+
+    // Don't retry token refresh for auth endpoints
+    const isAuthEndpoint = url?.includes("/auth/login") || 
+                          url?.includes("/auth/signup") || 
+                          url?.includes("/auth/refresh-token");
 
     if (
       error.response?.status === 401 &&
-      !originalRequest._retry
+      !originalRequest._retry &&
+      !isAuthEndpoint
     ) {
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
@@ -37,13 +44,17 @@ api.interceptors.response.use(
 
       originalRequest._retry = true;
       isRefreshing = true;
+      store.dispatch(refreshTokenRequest());
 
       try {
         await api.post("/auth/refresh-token");
-
         processQueue(null);
+        store.dispatch(refreshTokenSuccess());
+        // Wait a tick to ensure state update
+        await new Promise(resolve => setTimeout(resolve, 0));
         return api(originalRequest);
       } catch (err) {
+        store.dispatch(refreshTokenFailure(err.response?.data?.message || "Token refresh failed"));
         processQueue(err);
         store.dispatch(logoutSuccess());
         return Promise.reject(err);

@@ -157,9 +157,14 @@ export const getUrlAnalytics = asyncWrapper(async (req, res) => {
     new Response(
       200,
       {
+        _id: url._id,
         shortCode: url.shortCode,
         originalUrl: url.originalUrl,
-        clicks
+        clicks,
+        isActive: url.isActive,
+        createdAt: url.createdAt,
+        updatedAt: url.updatedAt,
+        expiryAt: url.expiryAt
       },
       "Analytics fetched successfully"
     )

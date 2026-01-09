@@ -5,6 +5,7 @@ const initialState = {
   isAuthenticated: false,
   loading: false,
   error: null,
+  refreshTokenError: null,
   authChecked: false // 👈 ADD THIS
 };
 
@@ -69,6 +70,19 @@ meFailure(state) {
   state.authChecked = true;
 },
 
+    refreshTokenRequest(state) {
+      state.loading = true;
+      state.refreshTokenError = null;
+    },
+
+    refreshTokenSuccess(state) {
+      state.loading = false;
+    },
+
+    refreshTokenFailure(state, action) {
+      state.loading = false;
+      state.refreshTokenError = action.payload;
+    },
 
     clearAuthError(state) {
       state.error = null;
@@ -88,6 +102,9 @@ export const {
   meFailure,
   logoutRequest,
   logoutSuccess,
+  refreshTokenRequest,
+  refreshTokenSuccess,
+  refreshTokenFailure,
   clearAuthError
 } = authSlice.actions;
 

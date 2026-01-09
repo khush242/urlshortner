@@ -7,6 +7,7 @@ import {
 import { useState } from "react";
 import CopyUrl from "./CopyUrl";
 import AnalyticsModal from "./AnalyticsModal";
+import { BarChart3, Trash2, Copy, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function UrlCard({ url }) {
   const dispatch = useDispatch();
@@ -17,92 +18,115 @@ export default function UrlCard({ url }) {
 
   return (
     <>
-      <div className="w-full bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition p-5 space-y-5">
-
-        {/* ===== ORIGINAL URL ===== */}
-        <div className="space-y-1">
-          <p className="text-[11px] uppercase tracking-wide text-slate-400">
-            Original URL
-          </p>
-          <a
-            href={url.originalUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm text-slate-800 break-all underline underline-offset-2"
-          >
-            {url.originalUrl}
-          </a>
+      <div className="w-full bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all overflow-hidden">
+        
+        {/* Header with Status */}
+        <div className={`px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-200 flex items-center justify-between ${
+          isExpired ? "bg-red-50" : url.isActive ? "bg-emerald-50" : "bg-slate-50"
+        }`}>
+          <p className="text-xs sm:text-sm font-semibold text-slate-900">URL #{url.shortCode}</p>
+          <div className="flex items-center gap-2">
+            {isExpired ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
+                <AlertCircle size={14} />
+                Expired
+              </span>
+            ) : url.isActive ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">
+                <CheckCircle size={14} />
+                Active
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-200 text-slate-700 text-xs font-medium">
+                Inactive
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* ===== SHORT URL ===== */}
-        <div className="space-y-1">
-          <p className="text-[11px] uppercase tracking-wide text-slate-400">
-            Short URL
-          </p>
-          <div className="flex items-center gap-2">
+        {/* Content */}
+        <div className="p-4 sm:p-6 space-y-4">
+          {/* Original URL */}
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              Original URL
+            </p>
             <a
-              href={shortUrl}
+              href={url.originalUrl}
               target="_blank"
               rel="noreferrer"
-              className="text-sm font-medium text-sky-600 break-all underline underline-offset-2"
+              className="text-sm text-slate-700 hover:text-slate-900 break-all underline underline-offset-2 line-clamp-2"
             >
-              {shortUrl}
+              {url.originalUrl}
             </a>
-            <CopyUrl url={shortUrl} />
           </div>
-        </div>
 
-        {/* ===== STATS + STATUS ===== */}
-        <div className="flex justify-between items-center pt-1">
+          {/* Short URL */}
           <div>
-            <p className="text-[11px] uppercase tracking-wide text-slate-400">
-              Clicks
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              Short URL
             </p>
-            <p className="text-lg font-semibold text-slate-800">
-              {url.clicks ?? 0}
-            </p>
+            <div className="flex items-center gap-2">
+              <a
+                href={shortUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-medium text-emerald-600 hover:text-emerald-700 break-all underline underline-offset-2 flex-1"
+              >
+                {shortUrl}
+              </a>
+              <CopyUrl url={shortUrl} />
+            </div>
           </div>
 
-          {isExpired ? (
-            <span className="px-3 py-1 text-xs rounded-full bg-rose-50 text-rose-600 font-medium">
-              Expired
-            </span>
-          ) : (
-            <button
-              onClick={() =>
-                dispatch(toggleUrlStatusRequest({ id: url._id }))
-              }
-              className={`px-3 py-1 text-xs rounded-full font-medium transition ${
-                url.isActive
-                  ? "bg-sky-50 text-sky-600 hover:bg-sky-100"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              }`}
-            >
-              {url.isActive ? "Active" : "Inactive"}
-            </button>
-          )}
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="bg-slate-50 rounded-lg p-3">
+              <p className="text-xs font-semibold text-slate-500 mb-1">Clicks</p>
+              <p className="text-2xl font-bold text-slate-900">{url.clicks ?? 0}</p>
+            </div>
+            <div className="bg-slate-50 rounded-lg p-3">
+              <p className="text-xs font-semibold text-slate-500 mb-1">Status</p>
+              <p className="text-lg font-bold text-slate-900">
+                {isExpired ? "Expired" : url.isActive ? "✓ On" : "✕ Off"}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* ===== ACTIONS ===== */}
-        <div className="flex justify-between items-center pt-4 border-t border-slate-100">
+        {/* Actions Footer */}
+        <div className="border-t border-slate-200 p-4 sm:p-6 flex gap-2 sm:gap-3">
           <button
             onClick={() => {
               setOpenAnalytics(true);
               dispatch(getUrlAnalyticsRequest({ id: url._id }));
             }}
-            className="text-sm font-medium text-sky-600 hover:underline underline-offset-2"
+            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium transition-colors text-sm"
           >
-            View Analytics
+            <BarChart3 size={16} />
+            Analytics
           </button>
 
+          {!isExpired && (
+            <button
+              onClick={() =>
+                dispatch(toggleUrlStatusRequest({ id: url._id }))
+              }
+              className="flex-1 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition-colors text-sm"
+            >
+              {url.isActive ? "Disable" : "Enable"}
+            </button>
+          )}
+
           <button
-            onClick={() =>
-              confirm("Delete this URL?") &&
-              dispatch(deleteUrlRequest({ shortCode: url.shortCode }))
-            }
-            className="text-sm font-medium text-rose-600 hover:underline underline-offset-2"
+            onClick={() => {
+              if (confirm("Delete this URL? This action cannot be undone.")) {
+                dispatch(deleteUrlRequest({ shortCode: url.shortCode }));
+              }
+            }}
+            className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
           >
-            Delete
+            <Trash2 size={16} />
           </button>
         </div>
       </div>

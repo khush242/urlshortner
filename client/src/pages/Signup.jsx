@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { registerRequest } from "../features/auth/authSlice";
-import { Eye, EyeOff } from "lucide-react"; 
+import { Eye, EyeOff, User, Mail, Lock, AlertCircle, CheckCircle } from "lucide-react";
 
 const Signup = () => {
   const dispatch = useDispatch();
 
   const { loading, error } = useSelector((state) => state.auth);
 
-  // State for form data and password visibility
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -17,6 +17,18 @@ const Signup = () => {
 
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [formErrors, setFormErrors] = useState({});
+  const [focusedField, setFocusedField] = useState(null);
+
+  // Password strength indicator
+  const getPasswordStrength = () => {
+    const pwd = formData.password;
+    if (pwd.length === 0) return { level: 0, text: "", color: "" };
+    if (pwd.length < 6) return { level: 1, text: "Weak", color: "text-red-500" };
+    if (pwd.length < 10) return { level: 2, text: "Medium", color: "text-amber-500" };
+    return { level: 3, text: "Strong", color: "text-emerald-500" };
+  };
+
+  const passwordStrength = getPasswordStrength();
 
   /* ===== VALIDATION ===== */
   const validate = () => {
@@ -24,6 +36,8 @@ const Signup = () => {
 
     if (!formData.fullName) {
       errors.fullName = "Full name is required";
+    } else if (formData.fullName.length < 2) {
+      errors.fullName = "Full name must be at least 2 characters";
     }
 
     if (!formData.email) {
@@ -48,11 +62,12 @@ const Signup = () => {
       [e.target.name]: e.target.value,
     });
 
-    // clear field error while typing
-    setFormErrors({
-      ...formErrors,
-      [e.target.name]: "",
-    });
+    if (formErrors[e.target.name]) {
+      setFormErrors({
+        ...formErrors,
+        [e.target.name]: "",
+      });
+    }
   };
 
   const handleSubmit = (e) => {
@@ -63,98 +78,258 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md space-y-5"
-      >
-        <h2 className="text-3xl font-bold text-center text-gray-800">
-          Create Account 🎉
-        </h2>
-
-        {/* Full Name */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Full Name</label>
-          <input
-            type="text"
-            name="fullName"
-            placeholder="Your full name"
-            className={`input ${formErrors.fullName ? "border-red-500" : ""}`}
-            value={formData.fullName}
-            onChange={handleChange}
-          />
-          {formErrors.fullName && (
-            <p className="text-red-500 text-xs">{formErrors.fullName}</p>
-          )}
-        </div>
-
-        {/* Email */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            name="email"
-            placeholder="you@example.com"
-            className={`input ${formErrors.email ? "border-red-500" : ""}`}
-            value={formData.email}
-            onChange={handleChange}
-          />
-          {formErrors.email && (
-            <p className="text-red-500 text-xs">{formErrors.email}</p>
-          )}
-        </div>
-
-        {/* Password */}
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Password</label>
-          <div className="relative">
-            <input
-              type={passwordVisible ? "text" : "password"}
-              name="password"
-              placeholder="••••••••"
-              className={`input ${formErrors.password ? "border-red-500" : ""}`}
-              value={formData.password}
-              onChange={handleChange}
-            />
-            <button
-              type="button"
-              onClick={() => setPasswordVisible(!passwordVisible)}
-              className="absolute right-3 top-1/3 transform -translate-y-1/2 text-gray-500"
-            >
-              {passwordVisible ? (
-                <EyeOff size={20} /> // Lucide EyeOff icon
-              ) : (
-                <Eye size={20} /> // Lucide Eye icon
-              )}
-            </button>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-amber-50 px-4 py-8">
+      <div className="w-full max-w-md">
+        {/* Logo/Header Section */}
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="bg-gradient-to-br from-emerald-600 to-cyan-500 p-3 rounded-xl shadow-lg">
+              <User className="w-8 h-8 text-white" />
+            </div>
           </div>
-          {formErrors.password && (
-            <p className="text-red-500 text-xs">{formErrors.password}</p>
-          )}
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-cyan-500 bg-clip-text text-transparent mb-2">
+            Get Started
+          </h1>
+          <p className="text-gray-600 text-sm">Create your account in seconds</p>
         </div>
 
-        {/* API Error */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded">
-            {error}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className={`btn-primary w-full mt-2 ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+        {/* Form Card */}
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 space-y-6"
         >
-          {loading ? "Creating..." : "Sign Up"}
-        </button>
+          {/* Full Name Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-800">
+              Full Name
+            </label>
+            <div
+              className={`relative flex items-center transition-all duration-200 rounded-lg border-2 ${
+                focusedField === "fullName"
+                  ? "border-emerald-500 bg-emerald-50"
+                  : formErrors.fullName
+                  ? "border-red-500 bg-red-50"
+                  : "border-gray-200 bg-gray-50 hover:border-gray-300"
+              }`}
+            >
+              <User className={`absolute left-3 w-5 h-5 transition-colors ${
+                focusedField === "fullName"
+                  ? "text-emerald-600"
+                  : formErrors.fullName
+                  ? "text-red-500"
+                  : "text-gray-400"
+              }`} />
+              <input
+                type="text"
+                name="fullName"
+                placeholder="John Doe"
+                className="w-full bg-transparent pl-10 pr-4 py-3 text-gray-900 placeholder-gray-500 outline-none text-sm"
+                value={formData.fullName}
+                onChange={handleChange}
+                onFocus={() => setFocusedField("fullName")}
+                onBlur={() => setFocusedField(null)}
+              />
+            </div>
+            {formErrors.fullName && (
+              <div className="flex items-center gap-1 text-red-600 text-xs font-medium">
+                <AlertCircle className="w-4 h-4" />
+                {formErrors.fullName}
+              </div>
+            )}
+          </div>
 
-        <p className="text-center text-sm text-gray-500">
-          Already have an account?{" "}
-          <span className="text-indigo-600 font-medium cursor-pointer">
-            Log in
-          </span>
+          {/* Email Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-800">
+              Email Address
+            </label>
+            <div
+              className={`relative flex items-center transition-all duration-200 rounded-lg border-2 ${
+                focusedField === "email"
+                  ? "border-emerald-500 bg-emerald-50"
+                  : formErrors.email
+                  ? "border-red-500 bg-red-50"
+                  : "border-gray-200 bg-gray-50 hover:border-gray-300"
+              }`}
+            >
+              <Mail className={`absolute left-3 w-5 h-5 transition-colors ${
+                focusedField === "email"
+                  ? "text-emerald-600"
+                  : formErrors.email
+                  ? "text-red-500"
+                  : "text-gray-400"
+              }`} />
+              <input
+                type="email"
+                name="email"
+                placeholder="name@example.com"
+                className="w-full bg-transparent pl-10 pr-4 py-3 text-gray-900 placeholder-gray-500 outline-none text-sm"
+                value={formData.email}
+                onChange={handleChange}
+                onFocus={() => setFocusedField("email")}
+                onBlur={() => setFocusedField(null)}
+              />
+            </div>
+            {formErrors.email && (
+              <div className="flex items-center gap-1 text-red-600 text-xs font-medium">
+                <AlertCircle className="w-4 h-4" />
+                {formErrors.email}
+              </div>
+            )}
+          </div>
+
+          {/* Password Field */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-800">
+              Password
+            </label>
+            <div
+              className={`relative flex items-center transition-all duration-200 rounded-lg border-2 ${
+                focusedField === "password"
+                  ? "border-emerald-500 bg-emerald-50"
+                  : formErrors.password
+                  ? "border-red-500 bg-red-50"
+                  : "border-gray-200 bg-gray-50 hover:border-gray-300"
+              }`}
+            >
+              <Lock className={`absolute left-3 w-5 h-5 transition-colors ${
+                focusedField === "password"
+                  ? "text-emerald-600"
+                  : formErrors.password
+                  ? "text-red-500"
+                  : "text-gray-400"
+              }`} />
+              <input
+                type={passwordVisible ? "text" : "password"}
+                name="password"
+                placeholder="••••••••"
+                className="w-full bg-transparent pl-10 pr-12 py-3 text-gray-900 placeholder-gray-500 outline-none text-sm"
+                value={formData.password}
+                onChange={handleChange}
+                onFocus={() => setFocusedField("password")}
+                onBlur={() => setFocusedField(null)}
+              />
+              <button
+                type="button"
+                onClick={() => setPasswordVisible(!passwordVisible)}
+                className="absolute right-3 text-gray-400 hover:text-gray-600 transition-colors p-1"
+              >
+                {passwordVisible ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+
+            {/* Password Strength Indicator */}
+            {formData.password && (
+              <div className="space-y-2">
+                <div className="flex gap-1">
+                  {[1, 2, 3].map((level) => (
+                    <div
+                      key={level}
+                      className={`h-2 flex-1 rounded-full transition-colors ${
+                        level <= passwordStrength.level
+                          ? level === 1
+                            ? "bg-red-500"
+                            : level === 2
+                            ? "bg-amber-500"
+                            : "bg-emerald-500"
+                          : "bg-gray-200"
+                      }`}
+                    ></div>
+                  ))}
+                </div>
+                <p className={`text-xs font-medium ${passwordStrength.color}`}>
+                  {passwordStrength.text} password
+                </p>
+              </div>
+            )}
+
+            {formErrors.password && (
+              <div className="flex items-center gap-1 text-red-600 text-xs font-medium">
+                <AlertCircle className="w-4 h-4" />
+                {formErrors.password}
+              </div>
+            )}
+          </div>
+
+          {/* API Error Alert */}
+          {error && (
+            <div className="flex gap-3 bg-red-50 border border-red-200 rounded-lg p-3 animate-shake">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-red-800 text-sm font-medium">Registration Failed</p>
+                <p className="text-red-600 text-xs mt-0.5">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Password Requirements */}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 space-y-2">
+            <p className="text-xs font-semibold text-emerald-900">Password Requirements:</p>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-xs text-emerald-700">
+                <CheckCircle className={`w-4 h-4 ${formData.password.length >= 6 ? "text-emerald-500" : "text-gray-300"}`} />
+                At least 6 characters
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-3 px-4 rounded-lg font-semibold text-white text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
+              loading
+                ? "bg-gray-400 cursor-not-allowed opacity-75"
+                : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 active:scale-95"
+            }`}
+          >
+            {loading ? (
+              <>
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Creating Account...
+              </>
+            ) : (
+              "Create Account"
+            )}
+          </button>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3">
+            <div className="flex-1 h-px bg-gray-200"></div>
+            <span className="text-gray-500 text-xs">Already registered?</span>
+            <div className="flex-1 h-px bg-gray-200"></div>
+          </div>
+
+          {/* Login Link */}
+          <div className="text-center">
+            <p className="text-gray-600 text-sm">
+              Already have an account?{" "}
+              <Link to="/login" className="text-emerald-600 hover:text-emerald-700 font-semibold transition-colors">
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </form>
+
+        {/* Footer */}
+        <p className="text-center text-gray-500 text-xs mt-6">
+          By signing up, you agree to our Terms of Service
         </p>
-      </form>            
+      </div>
+
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        .animate-shake {
+          animation: shake 0.3s ease-in-out;
+        }
+      `}</style>
     </div>
   );
 };

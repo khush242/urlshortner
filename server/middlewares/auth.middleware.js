@@ -45,14 +45,19 @@ export const verifyRefreshToken = asyncWrapper(async (req, res, next) => {
   try {
     decodedToken = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
   } catch {
+   
     throw new ApiError("Unauthorized, invalid or expired refresh token", 401);
   }
 
-  const user = await User.findById(decodedToken._id)
-    .select("-password -refreshToken");
 
-  if (!user || user.refreshToken !== refreshToken) {
-    throw new ApiError("Unauthorized, user not found or token mismatch", 401);
+  //find user with id and refresh token
+  const user = await User.findOne({
+    _id: decodedToken._id,
+    refreshToken: refreshToken
+  });
+
+  if (!user) {
+    throw new ApiError("Unauthorized, user not found", 401);
   }
 
   req.user = user;

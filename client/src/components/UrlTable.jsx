@@ -5,15 +5,15 @@ export default function UrlTable({ urls }) {
   return (
     <>
       {/* ===== DESKTOP TABLE ===== */}
-      <div className="hidden md:block overflow-x-auto bg-white rounded-3xl shadow border border-gray-100">
-        <table className="min-w-full text-sm">
+      <div className="hidden md:block overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
+        <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50 text-gray-600 text-left">
-              <th className="px-4 py-4">Original URL</th>
-              <th className="px-4 py-4">Short URL</th>
-              <th className="px-4 py-4 text-center">Clicks</th>
-              <th className="px-4 py-4 text-center">Status</th>
-              <th className="px-4 py-4 text-center">Actions</th>
+            <tr className="bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 text-left border-b border-slate-200">
+              <th className="px-4 sm:px-6 py-4 font-semibold">Original URL</th>
+              <th className="px-4 sm:px-6 py-4 font-semibold">Short URL</th>
+              <th className="px-4 sm:px-6 py-4 font-semibold text-center">Clicks</th>
+              <th className="px-4 sm:px-6 py-4 font-semibold text-center">Status</th>
+              <th className="px-4 sm:px-6 py-4 font-semibold text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
